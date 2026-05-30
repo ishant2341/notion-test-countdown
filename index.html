@@ -4,72 +4,162 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Next Test Countdown</title>
+
   <style>
-    body {
-      margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    :root{
+      --panel: #0b0b0b;        /* main black */
+      --tile: #101010;         /* tile black */
+      --tile-border: #242424;  /* border */
+      --text: #f5f5f5;         /* white-ish */
+      --muted: #b9b9b9;        /* muted */
+      --accent: #ffffff;       /* brightest white (numbers) */
+    }
+
+    body{
+      margin:0;
       background: transparent;
-      color: #111;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
     }
-    .card {
-      padding: 14px 16px;
+
+    .wrap{
+      display:inline-block;
+      background: var(--panel);
+      border: 1px solid #111;
+      border-radius: 18px;
+      padding: 14px 14px 12px;
+      min-width: 280px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+    }
+
+    .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom: 12px;
+    }
+
+    .title{
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .next{
+      margin-top: 5px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .pill{
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid #2a2a2a;
+      background: #0f0f0f;
+      color: #e1e1e1;
+      font-size: 11px;
+      white-space: nowrap;
+      line-height: 1.2;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .tile{
+      background: var(--tile);
+      border: 2px solid var(--tile-border);
       border-radius: 14px;
-      background: #f6f6f6;
-      display: inline-block;
-      min-width: 260px;
+      padding: 14px 10px 12px;
+      text-align:center;
     }
-    .label {
-      font-size: 12px;
-      opacity: 0.75;
-      margin-bottom: 6px;
+
+    .num{
+      font-size: 36px;
+      line-height: 1;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: 0.02em;
     }
-    .date {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-    .time {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-    }
-    .small {
-      font-size: 12px;
-      opacity: 0.75;
+
+    .unit{
       margin-top: 8px;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .footer{
+      margin-top: 10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      color: var(--muted);
+      font-size: 11px;
     }
   </style>
 </head>
+
 <body>
-  <div class="card">
-    <div class="label">Countdown to next test</div>
-    <div class="date" id="nextDate">Loading…</div>
-    <div class="time" id="countdown">--d --h --m --s</div>
-    <div class="small" id="note">Times are in IST (Asia/Kolkata).</div>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div class="title">Next test countdown</div>
+        <div class="next" id="nextDate">Loading…</div>
+      </div>
+      <div class="pill">IST • 09:00</div>
+    </div>
+
+    <div class="grid">
+      <div class="tile">
+        <div class="num" id="d">--</div>
+        <div class="unit">Days</div>
+      </div>
+      <div class="tile">
+        <div class="num" id="h">--</div>
+        <div class="unit">Hours</div>
+      </div>
+      <div class="tile">
+        <div class="num" id="m">--</div>
+        <div class="unit">Mins</div>
+      </div>
+      <div class="tile">
+        <div class="num" id="s">--</div>
+        <div class="unit">Secs</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div id="note">Auto-picks the next date</div>
+      <div class="pill" id="whichTest">—</div>
+    </div>
   </div>
 
   <script>
-    // 1) EDIT THIS LIST when you have new test dates.
-    // Format: "YYYY-MM-DDTHH:MM:SS+05:30"  (the +05:30 forces IST correctly)
+    // ====== EDIT ONLY THIS LIST when you have new tests ======
+    // Format must be exactly like this to force IST: "YYYY-MM-DDTHH:MM:SS+05:30"
     const TEST_DATES = [
       "2026-06-07T09:00:00+05:30",
       "2026-06-28T09:00:00+05:30",
     ];
+    // ========================================================
 
     function getNextTestDate(now) {
       for (const s of TEST_DATES) {
         const d = new Date(s);
         if (d.getTime() > now.getTime()) return d;
       }
-      return null; // no future dates
-    }
-
-    function pad2(n) {
-      return String(n).padStart(2, "0");
+      return null;
     }
 
     function formatIST(d) {
-      // Show it nicely in IST
       return new Intl.DateTimeFormat("en-IN", {
         timeZone: "Asia/Kolkata",
         weekday: "short",
@@ -87,17 +177,24 @@
       const next = getNextTestDate(now);
 
       const nextDateEl = document.getElementById("nextDate");
-      const countdownEl = document.getElementById("countdown");
       const noteEl = document.getElementById("note");
+      const whichTestEl = document.getElementById("whichTest");
+
+      const dEl = document.getElementById("d");
+      const hEl = document.getElementById("h");
+      const mEl = document.getElementById("m");
+      const sEl = document.getElementById("s");
 
       if (!next) {
         nextDateEl.textContent = "No upcoming tests in the list";
-        countdownEl.textContent = "Add a new date";
-        noteEl.textContent = "Edit TEST_DATES in index.html and add your next test.";
+        noteEl.textContent = "Add a new date in TEST_DATES";
+        whichTestEl.textContent = "No dates";
+        dEl.textContent = hEl.textContent = mEl.textContent = sEl.textContent = "--";
         return;
       }
 
       nextDateEl.textContent = formatIST(next);
+      whichTestEl.textContent = next.toISOString().slice(0, 10);
 
       let diffMs = next.getTime() - now.getTime();
       if (diffMs < 0) diffMs = 0;
@@ -108,8 +205,10 @@
       const mins = Math.floor((totalSeconds % 3600) / 60);
       const secs = totalSeconds % 60;
 
-      countdownEl.textContent = `${days}d ${pad2(hours)}h ${pad2(mins)}m ${pad2(secs)}s`;
-      noteEl.textContent = "Times are in IST (Asia/Kolkata).";
+      dEl.textContent = String(days);
+      hEl.textContent = String(hours).padStart(2, "0");
+      mEl.textContent = String(mins).padStart(2, "0");
+      sEl.textContent = String(secs).padStart(2, "0");
     }
 
     tick();
